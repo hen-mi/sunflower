@@ -2,7 +2,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
-
+#include <Lexer.h>
 namespace Sunflower 
 {
     std::string readFromFile(const std::string& filePath) 
@@ -20,4 +20,6 @@ int main(int argc, char** argv)
 {
     std::string filePath = "examples/test.sun";
     std::cout << Sunflower::readFromFile(filePath);
+
+    Lexer l(filePath);
 }
