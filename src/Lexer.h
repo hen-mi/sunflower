@@ -1,25 +1,35 @@
 #pragma once
-
+#include <sunflower.h>
 #include <Token.h>
-#include <string>
-#include <vector>
 
-class Lexer 
+
+namespace Sunflower
 {
-public:
+	class Lexer
+	{	
+	public:
 
-	Lexer(const std::string& source);
-	std::vector<Token> tokenize();
+		Lexer(const std::string& source);
+		void tokenize();
+		~Lexer();
 
+	private:
 
-private:
+		char nextChar();
+		char peekChar();
+		bool isAtEnd();
+		bool findMatch(char expected);
+		void addToken(TokenType type);
+		
 
-	std::string		mSourceCode;
-	size_t			mPosition;
-	char			mByte;
+	private:
 
-	char nextChar();
-	char peekChar();
+		const std::string mSourceCode;
+		size_t				mPosition;
+		size_t					mLine;
+		std::string	   mCurrentLexema;
+		char					mByte;
 
+	};
 
-};
+}
