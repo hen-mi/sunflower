@@ -20,7 +20,8 @@ namespace Sunflower
 		bool isAtEnd();
 		bool findMatch(char expected);
 		void addToken(TokenType type);
-		
+		void string();
+		void identifier();
 
 	private:
 

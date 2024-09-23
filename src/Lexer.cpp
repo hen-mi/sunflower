@@ -14,15 +14,17 @@ namespace Sunflower
 	void Lexer::tokenize()
 	{
 
-		while(isAtEnd()) 
+		while(!isAtEnd()) 
 		{
 			char c = nextChar();
-
+			
 			switch (c)
 			{
-			case '(': addToken(TokenType::LEFT_PARENTHESIS); break;
-			case ')': addToken(TokenType::RIGHT_PARENTHESIS); break;
-
+			case '{': addToken(TokenType::LEFT_BRACE); mCurrentLexema += c; break;
+			case '}': addToken(TokenType::RIGHT_BRACE); mCurrentLexema += c; break;
+			case '(': addToken(TokenType::LEFT_PARENTHESIS); mCurrentLexema += c; break;
+			case ')': addToken(TokenType::RIGHT_PARENTHESIS); mCurrentLexema += c; break;
+			case '"': string();  break;
 
 			//whitespace 
 			case ' ':	break;
@@ -33,6 +35,12 @@ namespace Sunflower
 			case '\n': mLine++; break;
 
 			default:
+
+				if(std::isalpha(c)) 
+				{
+					mByte = c;
+					Lexer::identifier();
+				}
 				break;
 			}
 		}
@@ -50,7 +58,7 @@ namespace Sunflower
 
 	char Lexer::peekChar() 
 	{
-		return Lexer::isAtEnd() ? mSourceCode[mPosition + 1] : '\n';
+		return Lexer::isAtEnd() ? '\n' : mSourceCode[mPosition + 1];
 	}
 
 	bool Lexer::findMatch(char expected) 
@@ -68,14 +76,49 @@ namespace Sunflower
 		
 		Sunflower::SymbolsTable.push_back
 		(
-			{ type, mCurrentLexema, mLine }
+			{ type, mCurrentLexema, mLine}
 		);
 		mCurrentLexema = "";
-		mPosition++;
-		mLine++;
-
 	}
 
+	void Lexer::string() 
+	{
+		
+		while(Lexer::peekChar() != '"' && !isAtEnd())
+		{
+			
+			if (peekChar() == '\n')
+				mLine++;
+
+			mCurrentLexema += Lexer::nextChar();
+			
+		}
+		
+
+		mCurrentLexema += Lexer::nextChar();
+		
+		addToken(TokenType::STRING);
+	}
+
+	void Lexer::identifier() 
+	{
+		mCurrentLexema += mByte;
+
+		while(std::isalpha(Lexer::peekChar())) 
+		{
+			
+			mCurrentLexema += Lexer::nextChar();
+		}
+		mCurrentLexema += Lexer::nextChar();
+
+		if(keyword.find(mCurrentLexema) != keyword.end()) 
+		{
+			addToken(TokenType::FN);
+		}
+
+		addToken(TokenType::IDENTIFIER);
+
+	}
 	Lexer::~Lexer() {}
 }
 
