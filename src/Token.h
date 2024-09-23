@@ -3,13 +3,27 @@
 
 enum class TokenType 
 {
-	
+	//SINGLE CHARACTER
+	LEFT_PARENTHESIS, RIGHT_PARENTHESIS, LEFT_BRACE,
+
+	//SINGLE OR DOUBLE VARIANT 
+	EQUAL, EQUAL_EQUAL,
+
+	//LITERALS
+	IDENTIFIER, STRING,
+
+	//KEYWOARDS
+
+	FN, 
+
+   _EOF
 };
 
-struct Token final
+struct Token
 {
-	TokenType		    t;
-	std::string		value;
-	uint32_t		 line;
+
+	TokenType		    tokentype;
+	std::string			   lexema;
+	size_t					 line;
 
 };
