@@ -20,10 +20,15 @@ namespace Sunflower
 			
 			switch (c)
 			{
-			case '{': addToken(TokenType::LEFT_BRACE); mCurrentLexema += c; break;
-			case '}': addToken(TokenType::RIGHT_BRACE); mCurrentLexema += c; break;
-			case '(': addToken(TokenType::LEFT_PARENTHESIS); mCurrentLexema += c; break;
-			case ')': addToken(TokenType::RIGHT_PARENTHESIS); mCurrentLexema += c; break;
+			//single characters
+			case '{': mCurrentLexema += c; addToken(TokenType::LEFT_CBRACE); break;
+
+			case '}': mCurrentLexema += c; addToken(TokenType::RIGHT_CBRACE);break;
+
+			case '(': mCurrentLexema += c; addToken(TokenType::LEFT_PARENTHESIS); break;
+
+			case ')': mCurrentLexema += c; addToken(TokenType::RIGHT_PARENTHESIS); break;
+
 			case '"': string();  break;
 
 			//whitespace 
@@ -35,11 +40,16 @@ namespace Sunflower
 			case '\n': mLine++; break;
 
 			default:
-
+			//identifier or keyword
 				if(std::isalpha(c)) 
 				{
 					mByte = c;
 					Lexer::identifier();
+				}
+
+				if(std::isdigit(c)) 
+				{
+					//TODO
 				}
 				break;
 			}
@@ -93,10 +103,8 @@ namespace Sunflower
 			mCurrentLexema += Lexer::nextChar();
 			
 		}
-		
-
 		mCurrentLexema += Lexer::nextChar();
-		
+		Lexer::nextChar();
 		addToken(TokenType::STRING);
 	}
 
@@ -113,10 +121,13 @@ namespace Sunflower
 
 		if(keyword.find(mCurrentLexema) != keyword.end()) 
 		{
-			addToken(TokenType::FN);
+			addToken(keyword[mCurrentLexema]);
 		}
-
-		addToken(TokenType::IDENTIFIER);
+		else 
+		{
+			addToken(TokenType::IDENTIFIER);
+		}
+		
 
 	}
 	Lexer::~Lexer() {}
