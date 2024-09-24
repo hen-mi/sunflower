@@ -17,7 +17,7 @@ namespace Sunflower
         for (const auto& token : Sunflower::SymbolsTable) 
         {
             
-            std::cout << " " << token.lexema << " " << token.line << "\n";
+            std::cout << TokenTypeToString[token.tokentype] <<" " << token.lexema << " " << token.line << "\n";
         }
     }
 }
