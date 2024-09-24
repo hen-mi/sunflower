@@ -34,5 +34,6 @@
 bin/
 build/
 /.vs
+src/.vs
 .idea/
 CmakeSettings.json

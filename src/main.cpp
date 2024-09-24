@@ -11,7 +11,6 @@ int main(int argc, char** argv)
    
     Sunflower::Lexer l(Sunflower::readFromFile(filePath));
 
-
     Sunflower::printSymbolsTable();
    
 }
