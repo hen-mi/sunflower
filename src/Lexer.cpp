@@ -33,13 +33,21 @@ namespace Sunflower
 			case '(': mCurrentLexema += c; addToken(TokenType::LEFT_PARENTHESIS); break;
 
 			case ')': mCurrentLexema += c; addToken(TokenType::RIGHT_PARENTHESIS); break;
-			
-			case ':': mCurrentLexema += c; addToken(TokenType::COLON); break;
-
+	
 			case '[': mCurrentLexema += c; addToken(TokenType::LEFT_SQUAREBR); break;
 
 			case ']': mCurrentLexema += c; addToken(TokenType::RIGHT_SQUAREBR); break;
 			
+			case '/': mCurrentLexema += c; addToken(TokenType::SLASH); break;
+
+			case '*': mCurrentLexema += c; addToken(TokenType::STAR); break;
+
+			case ':': mCurrentLexema += c; addToken(TokenType::COLON); break;
+
+			case '+': mCurrentLexema += c; addToken(TokenType::PLUS); break;
+
+			case ',': mCurrentLexema += c; addToken(TokenType::COMMA); break;
+
 			//single or double characters
 			case '-': 
 				
@@ -54,11 +62,13 @@ namespace Sunflower
 			
 				else { mCurrentLexema += c; addToken(TokenType::MINUS); } break;
 						
-			case '=': findMatch('=') ? addToken(TokenType::EQUAL) : addToken(TokenType::EQUAL_EQUAL); break;
-			case '>': break;
-			case '<': break;
-			case '/': break;
-			case '!': break;
+			case '=': addToken(findMatch('=') ? TokenType::EQUAL_EQUAL : TokenType::EQUAL); break;
+
+			case '>': addToken(findMatch('=') ? TokenType::LESS_EQUAL  : TokenType::LESS);  break;
+
+			case '<': addToken(findMatch('=') ? TokenType::GREATER_EQUAL : TokenType::GREATER); break;
+
+			case '!': addToken(findMatch('=') ? TokenType::NOT_EQUAL : TokenType::NOT); break;
 			//Literals
 			case '"': string();  break;
 
@@ -108,7 +118,7 @@ namespace Sunflower
 		if (isAtEnd()) return false;
 
 		if (mSourceCode.at(mPosition) != expected) return false;
-
+		
 		mPosition++;
 
 		return true;

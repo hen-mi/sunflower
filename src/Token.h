@@ -5,16 +5,20 @@ enum class TokenType
 {
 	//SINGLE CHARACTER
 	LEFT_PARENTHESIS, RIGHT_PARENTHESIS, LEFT_CBRACE, RIGHT_CBRACE,
-	MINUS, COLON, LEFT_SQUAREBR, RIGHT_SQUAREBR,
+	COLON, LEFT_SQUAREBR, RIGHT_SQUAREBR, SLASH, STAR, PLUS, COMMA,
 	//SINGLE OR DOUBLE VARIANT 
-	EQUAL, EQUAL_EQUAL, IF,
+	EQUAL, EQUAL_EQUAL,
+	MINUS, IF, 
+	LESS, LESS_EQUAL,
+	GREATER, GREATER_EQUAL,
+	NOT, NOT_EQUAL,
 
 	//LITERALS
-	IDENTIFIER, STRING,
+	IDENTIFIER, STRING, NUMBER,
 
 	//KEYWORDS
 
-	FN, POUT,
+	FN, POUT, TRUE, FALSE,
 
    _EOF
 };
@@ -22,6 +26,8 @@ enum class TokenType
 inline std::unordered_map<std::string, TokenType> keyword
 {
 	{"fn", TokenType::FN},
+	{"true", TokenType::TRUE},
+	{"false", TokenType::FALSE},
 	{"pout", TokenType::POUT}
 };
 
@@ -36,7 +42,10 @@ inline std::unordered_map<TokenType, std::string> TokenTypeToString
 	{TokenType::IDENTIFIER, "IDENTIFIER"},
 	{TokenType::STRING, "STRING"},
 	{TokenType::IF, "IF"},
-	{TokenType::_EOF, "EOF"}
+	{TokenType::_EOF, "EOF"},
+	{TokenType::MINUS, "MINUS"},
+	{TokenType::EQUAL, "EQUAL"},
+	{TokenType::EQUAL_EQUAL, "EQUAL_EQUAL"}
 };
 
 struct Token
