@@ -21,14 +21,45 @@ namespace Sunflower
 			switch (c)
 			{
 			//single characters
-			case '{': mCurrentLexema += c; addToken(TokenType::LEFT_CBRACE); break;
+			case '{': 
+				mCurrentLexema += c; addToken(TokenType::LEFT_CBRACE);
+				mClosed.push({c, mLine});
+				break;
 
-			case '}': mCurrentLexema += c; addToken(TokenType::RIGHT_CBRACE);break;
+			case '}': mCurrentLexema += c; addToken(TokenType::RIGHT_CBRACE);
+				mClosed.pop();
+				break;
 
 			case '(': mCurrentLexema += c; addToken(TokenType::LEFT_PARENTHESIS); break;
 
 			case ')': mCurrentLexema += c; addToken(TokenType::RIGHT_PARENTHESIS); break;
+			
+			case ':': mCurrentLexema += c; addToken(TokenType::COLON); break;
 
+			case '[': mCurrentLexema += c; addToken(TokenType::LEFT_SQUAREBR); break;
+
+			case ']': mCurrentLexema += c; addToken(TokenType::RIGHT_SQUAREBR); break;
+			
+			//single or double characters
+			case '-': 
+				
+				if (findMatch('-')) //comment line
+				{					
+					while (peekChar() != '\n' && !isAtEnd()) { nextChar(); }
+					nextChar();
+					break;
+				}
+				
+				else if (findMatch('>')) { addToken(TokenType::IF); break; }
+			
+				else { mCurrentLexema += c; addToken(TokenType::MINUS); } break;
+						
+			case '=': findMatch('=') ? addToken(TokenType::EQUAL) : addToken(TokenType::EQUAL_EQUAL); break;
+			case '>': break;
+			case '<': break;
+			case '/': break;
+			case '!': break;
+			//Literals
 			case '"': string();  break;
 
 			//whitespace 
@@ -36,7 +67,7 @@ namespace Sunflower
 			case '\0':	break;
 			case '\r':	break;
 			case '\t':	break;
-
+			
 			case '\n': mLine++; break;
 
 			default:
@@ -47,12 +78,16 @@ namespace Sunflower
 					Lexer::identifier();
 				}
 
-				if(std::isdigit(c)) 
+				else if(std::isdigit(c)) 
 				{
 					//TODO
 				}
 				break;
 			}
+		}
+		if(!mClosed.empty()) 
+		{
+			std::cout << "unclosed bracket: " << mClosed.top().c <<" on line:" << mClosed.top().m << "\n";
 		}
 		Lexer::addToken(TokenType::_EOF);
 	}
@@ -73,8 +108,9 @@ namespace Sunflower
 
 	bool Lexer::findMatch(char expected) 
 	{
-		if (Lexer::isAtEnd() || expected != mSourceCode.at(mPosition + 1))
-			return false;
+		if (isAtEnd()) return false;
+
+		if (mSourceCode.at(mPosition) != expected) return false;
 
 		mPosition++;
 
