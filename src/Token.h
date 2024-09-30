@@ -5,9 +5,9 @@ enum class TokenType
 {
 	//SINGLE CHARACTER
 	LEFT_PARENTHESIS, RIGHT_PARENTHESIS, LEFT_CBRACE, RIGHT_CBRACE,
-
+	MINUS, COLON, LEFT_SQUAREBR, RIGHT_SQUAREBR,
 	//SINGLE OR DOUBLE VARIANT 
-	EQUAL, EQUAL_EQUAL,
+	EQUAL, EQUAL_EQUAL, IF,
 
 	//LITERALS
 	IDENTIFIER, STRING,
@@ -35,6 +35,7 @@ inline std::unordered_map<TokenType, std::string> TokenTypeToString
 	{TokenType::POUT, "POUT"},
 	{TokenType::IDENTIFIER, "IDENTIFIER"},
 	{TokenType::STRING, "STRING"},
+	{TokenType::IF, "IF"},
 	{TokenType::_EOF, "EOF"}
 };
 
