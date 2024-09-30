@@ -23,11 +23,11 @@ namespace Sunflower
 			//single characters
 			case '{': 
 				mCurrentLexema += c; addToken(TokenType::LEFT_CBRACE);
-				mClosed.push({c, mLine});
+
 				break;
 
 			case '}': mCurrentLexema += c; addToken(TokenType::RIGHT_CBRACE);
-				mClosed.pop();
+
 				break;
 
 			case '(': mCurrentLexema += c; addToken(TokenType::LEFT_PARENTHESIS); break;
@@ -85,10 +85,7 @@ namespace Sunflower
 				break;
 			}
 		}
-		if(!mClosed.empty()) 
-		{
-			std::cout << "unclosed bracket: " << mClosed.top().c <<" on line:" << mClosed.top().m << "\n";
-		}
+
 		Lexer::addToken(TokenType::_EOF);
 	}
 
