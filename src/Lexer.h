@@ -15,11 +15,13 @@ namespace Sunflower
 
 		char nextChar();
 		char peekChar();
+		char nextPeekChar();
 		bool isAtEnd();
 		bool findMatch(char expected);
 		void addToken(TokenType type);
 		void string();
 		void identifier();
+		void number();
 
 	private:
 

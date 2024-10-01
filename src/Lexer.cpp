@@ -90,6 +90,8 @@ namespace Sunflower
 
 				else if(std::isdigit(c)) 
 				{
+					mByte = c;
+					Lexer::number();
 					//TODO
 				}
 				break;
@@ -111,6 +113,12 @@ namespace Sunflower
 	char Lexer::peekChar() 
 	{
 		return Lexer::isAtEnd() ? '\n' : mSourceCode[mPosition + 1];
+	}
+
+	char Lexer::nextPeekChar() 
+	{
+		if (mPosition + 1 >= mSourceCode.size()) return '\0';
+		return Lexer::isAtEnd() ? '\n' : mSourceCode[mPosition + 2];
 	}
 
 	bool Lexer::findMatch(char expected) 
@@ -171,6 +179,24 @@ namespace Sunflower
 			addToken(TokenType::IDENTIFIER);
 		}
 		
+
+	}
+	void Lexer::number() 
+	{
+		mCurrentLexema += mByte;
+
+		while (std::isdigit(Lexer::peekChar())) mCurrentLexema += Lexer::nextChar();
+		
+		if (Lexer::peekChar() == '.' && std::isdigit(Lexer::nextPeekChar()))
+		{
+			mCurrentLexema += Lexer::nextChar();
+		}
+		
+		while (std::isdigit(Lexer::peekChar())) mCurrentLexema += Lexer::nextChar();
+
+		mCurrentLexema += Lexer::nextChar();
+
+		addToken(TokenType::NUMBER);
 
 	}
 	Lexer::~Lexer() {}
