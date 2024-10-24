@@ -14,11 +14,11 @@ enum class TokenType
 	NOT, NOT_EQUAL,
 
 	//LITERALS
-	IDENTIFIER, STRING, NUMBER,
+	IDENTIFIER, STRING, NUMBER, _NULL,
 
 	//KEYWORDS
 
-	FN, POUT, TRUE, FALSE,
+	FN, POUT, TRUE, FALSE, WHILE,
 
    _EOF
 };
@@ -28,7 +28,9 @@ inline std::unordered_map<std::string, TokenType> keyword
 	{"fn", TokenType::FN},
 	{"true", TokenType::TRUE},
 	{"false", TokenType::FALSE},
-	{"pout", TokenType::POUT}
+	{"pout", TokenType::POUT},
+	{"null", TokenType::_NULL},
+	{"while", TokenType::WHILE}
 };
 
 inline std::unordered_map<TokenType, std::string> TokenTypeToString
