@@ -161,4 +161,25 @@ namespace Sunflower
 
 		throw ParseError{};
 	}
+
+	void Parser::synchronize()
+	{
+		advance();
+
+		while (!isAtEnd())
+		{
+			if (previous().tokentype == TokenType::NEWLINE) return;
+			switch (peek().tokentype)
+			{
+			case TokenType::FN:
+			case TokenType::IF:
+			case TokenType::WHILE:
+			case TokenType::POUT:
+
+			case TokenType::RETURN: return;
+			}
+		}
+
+		advance();
+	}
 }

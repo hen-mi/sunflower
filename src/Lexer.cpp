@@ -8,7 +8,6 @@ namespace Sunflower
 	{
 		
 		Lexer::tokenize();
-		
 	}
 
 	void Lexer::tokenize()
@@ -78,7 +77,7 @@ namespace Sunflower
 			case '\r':	break;
 			case '\t':	break;
 			
-			case '\n': mLine++; break;
+			case '\n': mCurrentLexema += c; addToken(TokenType::NEWLINE); mLine++; break;
 
 			default:
 			//identifier or keyword
@@ -92,7 +91,7 @@ namespace Sunflower
 				{
 					mByte = c;
 					Lexer::number();
-					//TODO
+					
 				}
 				break;
 			}
@@ -134,7 +133,7 @@ namespace Sunflower
 
 	void Lexer::addToken(TokenType type) 
 	{
-		
+		//TODO: add numbers as their values, not strings
 		Sunflower::SymbolsTable.push_back
 		(
 			{ type, mCurrentLexema, mLine}
@@ -194,11 +193,11 @@ namespace Sunflower
 		
 		while (std::isdigit(Lexer::peekChar())) mCurrentLexema += Lexer::nextChar();
 
-		mCurrentLexema += Lexer::nextChar();
+		if(mCurrentLexema.size() > 1) mCurrentLexema += Lexer::nextChar();
 
 		addToken(TokenType::NUMBER);
 
 	}
-	Lexer::~Lexer() {}
+	Lexer::~Lexer() { std::cout << "Lexer object destroyed\n"; }
 }
 

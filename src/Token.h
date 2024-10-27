@@ -6,6 +6,7 @@ enum class TokenType
 	//SINGLE CHARACTER
 	LEFT_PARENTHESIS, RIGHT_PARENTHESIS, LEFT_CBRACE, RIGHT_CBRACE,
 	COLON, LEFT_SQUAREBR, RIGHT_SQUAREBR, SLASH, STAR, PLUS, COMMA,
+	NEWLINE,
 	//SINGLE OR DOUBLE VARIANT 
 	EQUAL, EQUAL_EQUAL,
 	MINUS, IF, 
@@ -18,7 +19,7 @@ enum class TokenType
 
 	//KEYWORDS
 
-	FN, POUT, TRUE, FALSE, WHILE,
+	FN, POUT, TRUE, FALSE, WHILE, RETURN,
 
    _EOF
 };
@@ -30,7 +31,8 @@ inline std::unordered_map<std::string, TokenType> keyword
 	{"false", TokenType::FALSE},
 	{"pout", TokenType::POUT},
 	{"null", TokenType::_NULL},
-	{"while", TokenType::WHILE}
+	{"while", TokenType::WHILE},
+	{"return", TokenType::RETURN}
 };
 
 inline std::unordered_map<TokenType, std::string> TokenTypeToString

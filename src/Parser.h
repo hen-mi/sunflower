@@ -38,7 +38,7 @@ namespace Sunflower
 
 		ParseError error(Token t, const std::string& message);
 
-
+		void synchronize();
 
 	private:
 
