@@ -10,9 +10,10 @@ namespace Sunflower
 	public:
 
 		Parser(std::vector<Token>& Tokens);
+		std::unique_ptr<Expr> parse();
 
 	private:
-
+		
 		Token peek();
 		Token advance();
 		Token previous();
@@ -26,7 +27,7 @@ namespace Sunflower
 		std::unique_ptr<Expr> unary();
 		std::unique_ptr<Expr> primary();
 
-		bool match(std::vector<TokenType> &TokenTypes);
+		bool match(std::vector<TokenType> TokenTypes);
 		
 		bool check(TokenType type); 
 		bool isAtEnd();

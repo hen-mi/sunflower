@@ -49,7 +49,8 @@ inline std::unordered_map<TokenType, std::string> TokenTypeToString
 	{TokenType::_EOF, "EOF"},
 	{TokenType::MINUS, "MINUS"},
 	{TokenType::EQUAL, "EQUAL"},
-	{TokenType::EQUAL_EQUAL, "EQUAL_EQUAL"}
+	{TokenType::EQUAL_EQUAL, "EQUAL_EQUAL"},
+	{TokenType::NEWLINE, "nl"}
 };
 
 struct Token

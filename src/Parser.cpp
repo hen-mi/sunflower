@@ -5,6 +5,11 @@ namespace Sunflower
 
 	Parser::Parser(std::vector<Token>& Tokens) : mTokens{ Tokens }, mCurrentToken{ 0 } {}
 
+	std::unique_ptr<Expr> Parser::parse()
+	{
+		try { return expression(); }
+		catch (ParseError error) { return nullptr; }
+	};
 
 	std::unique_ptr<Expr> Parser::expression() 
 	{
@@ -70,14 +75,13 @@ namespace Sunflower
 	}
 	std::unique_ptr<Expr> Parser::unary() 
 	{
-		auto expr = primary();
 
 		if(match({TokenType::NOT, TokenType::MINUS})) 
 		{
 			Token op = previous();
-			auto right = primary();
+			auto right = unary();
 			
-			return std::make_unique<UnaryExpr>(op, std::move(expr));
+			return std::make_unique<UnaryExpr>(op, std::move(right));
 		}
 
 		return primary();
@@ -88,9 +92,9 @@ namespace Sunflower
 		if (match({ TokenType::FALSE })) return std::make_unique<Literal>("false");
 		if (match({ TokenType::_NULL })) return std::make_unique<Literal>("null");
 
-		if (match({ TokenType::NUMBER, TokenType::STRING })) 
+		if (match({ TokenType::NUMBER, TokenType::IDENTIFIER})) 
 		{
-			return std::make_unique<Literal>(previous());
+			return std::make_unique<Literal>(previous().lexema);
 		}
 
 		if(match({TokenType::LEFT_PARENTHESIS})) 
@@ -99,10 +103,11 @@ namespace Sunflower
 
 			consume(TokenType::RIGHT_PARENTHESIS, "Expect ')' after expression");
 
-			return std::make_unique<GroupingExpr>(expr);
+			return std::make_unique<GroupingExpr>(std::move(expr));
 		}
+		else throw error(peek(), "Expected expression.");
 	}
-	bool Parser::match(std::vector<TokenType> &TokenTypes) 
+	bool Parser::match(std::vector<TokenType> TokenTypes) 
 	{
 		for(auto& type : TokenTypes)
 		{
@@ -177,6 +182,9 @@ namespace Sunflower
 			case TokenType::POUT:
 
 			case TokenType::RETURN: return;
+
+			default:
+				break;
 			}
 		}
 

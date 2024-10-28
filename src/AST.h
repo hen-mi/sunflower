@@ -2,6 +2,7 @@
 #include <Token.h>
 #include <memory>
 #include <any>
+#include <iostream>
 
 class BinaryExpr;
 class UnaryExpr;
@@ -37,7 +38,7 @@ public:
 
 	void accept(Visitor& v) override { v.visit(*this); }
 
-private:
+//private:
 	const std::unique_ptr<Expr> mLeft;
 	const std::unique_ptr<Expr> mRight;
 	const Token mOp;
@@ -51,7 +52,7 @@ public:
 
 	void accept(Visitor& v) override { v.visit(*this); }
 
-private:
+//private:
 	const std::unique_ptr<Expr> mRight;
 	const Token mOp;
 };
@@ -64,7 +65,7 @@ public:
 
 	void accept(Visitor& v) override { v.visit(*this); }
 
-private:
+//private:
 	const std::unique_ptr<Expr> mExpr;
 
 };
@@ -76,10 +77,40 @@ public:
 
 	Literal(std::any v) : mValue(v) {}
 	void accept(Visitor& v) override { v.visit(*this); }
-
-private:
+//private:
 	const std::any mValue;
 
 };
 
 
+class PrintVisitor : public Visitor
+{
+public:
+    void visit(BinaryExpr& node) override
+    {
+        std::cout << "(" << node.mOp.lexema << " ";
+        node.mLeft->accept(*this);
+        std::cout << " ";
+        node.mRight->accept(*this);
+        std::cout << ")";
+    }
+
+    void visit(UnaryExpr& node) override
+    {
+        std::cout << "(" << node.mOp.lexema << " ";
+        node.mRight->accept(*this);
+        std::cout << ")";
+    }
+
+    void visit(GroupingExpr& node) override
+    {
+        std::cout << "(group ";
+        node.mExpr->accept(*this);
+        std::cout << ")";
+    }
+
+    void visit(Literal& node) override
+    {
+        std::cout << std::any_cast<std::string>(node.mValue);
+    }
+};
