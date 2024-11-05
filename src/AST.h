@@ -1,116 +1,102 @@
-//Abstract Syntax Tree
+//Abstract Syntax 
+#pragma once
 #include <Token.h>
 #include <memory>
 #include <any>
 #include <iostream>
-
-class BinaryExpr;
-class UnaryExpr;
-class GroupingExpr;
-class Literal;
-
-class Visitor
+namespace Sunflower 
 {
-public:
-	virtual void visit(BinaryExpr& node) = 0;
-	virtual void visit(UnaryExpr& node) = 0;
-	virtual void visit(GroupingExpr& node) = 0;
-	virtual void visit(Literal& node) = 0;
 
-	virtual ~Visitor() = default;
-};
-class Expr 
-{
-public:
-	virtual void accept(Visitor	&v) = 0;
-	virtual ~Expr() = default;
+	class Visitor;
+	class BinaryExpr;
+	class UnaryExpr;
+	class GroupingExpr;
+	class Literal;
 
-};
+	class ExprVisitor
+	{
+	public:
+		virtual std::any visitBinaryExpr(BinaryExpr& node) = 0;
+		virtual std::any visitUnaryExpr(UnaryExpr& node) = 0;
+		virtual std::any visitGroupingExpr(GroupingExpr& node) = 0;
+		virtual std::any visitLiteralExpr(Literal& node) = 0;
 
-
-
-class BinaryExpr : public Expr 
-{
-public:
-
-	BinaryExpr(std::unique_ptr<Expr> left, Token op, std::unique_ptr<Expr> right) :
-				mLeft(std::move(left)), mRight(std::move(right)), mOp(op) {}
-
-	void accept(Visitor& v) override { v.visit(*this); }
-
-//private:
-	const std::unique_ptr<Expr> mLeft;
-	const std::unique_ptr<Expr> mRight;
-	const Token mOp;
-};
-
-class UnaryExpr : public Expr 
-{
-public:
-
-	UnaryExpr(Token op, std::unique_ptr<Expr> right) : mRight(std::move(right)), mOp(op) {}
-
-	void accept(Visitor& v) override { v.visit(*this); }
-
-//private:
-	const std::unique_ptr<Expr> mRight;
-	const Token mOp;
-};
+		virtual ~ExprVisitor() = default;
+	};
 
 
-class GroupingExpr : public Expr 
-{
-public:
-	GroupingExpr(std::unique_ptr<Expr> expression) : mExpr(std::move(expression)) {}
 
-	void accept(Visitor& v) override { v.visit(*this); }
+	class Expr
+	{
+	public:
+		virtual std::any accept(ExprVisitor& v) = 0;
+		virtual ~Expr() = default;
 
-//private:
-	const std::unique_ptr<Expr> mExpr;
-
-};
+	};
 
 
-class Literal : public Expr 
-{
-public:
 
-	Literal(std::any v) : mValue(v) {}
-	void accept(Visitor& v) override { v.visit(*this); }
-//private:
-	const std::any mValue;
+	class BinaryExpr : public Expr
+	{
+	public:
 
-};
+		BinaryExpr(std::unique_ptr<Expr> left, Token op, std::unique_ptr<Expr> right) :
+			mLeft(std::move(left)), mRight(std::move(right)), mOp(op) {}
+
+		std::any accept(ExprVisitor& v) override { return v.visitBinaryExpr(*this); }
+
+		Expr& getLeftExpr() const { return *mLeft; }
+		Expr& getRightExpr() const { return *mRight; }
+		const Token& getOp() const { return mOp; }
+
+	private:
+		const std::unique_ptr<Expr> mLeft;
+		const std::unique_ptr<Expr> mRight;
+		const Token mOp;
+	};
+
+	class UnaryExpr : public Expr
+	{
+	public:
+
+		UnaryExpr(Token op, std::unique_ptr<Expr> right) : mRight(std::move(right)), mOp(op) {}
+
+		std::any accept(ExprVisitor& v) override { return v.visitUnaryExpr(*this); }
+		Expr& getRightExpr() const { return *mRight; }
+		const Token& getOp() const { return mOp; }
+
+	private:
+		const std::unique_ptr<Expr> mRight;
+		const Token mOp;
+	};
 
 
-class PrintVisitor : public Visitor
-{
-public:
-    void visit(BinaryExpr& node) override
-    {
-        std::cout << "(" << node.mOp.lexema << " ";
-        node.mLeft->accept(*this);
-        std::cout << " ";
-        node.mRight->accept(*this);
-        std::cout << ")";
-    }
+	class GroupingExpr : public Expr
+	{
+	public:
+		GroupingExpr(std::unique_ptr<Expr> expression) : mExpr(std::move(expression)) {}
 
-    void visit(UnaryExpr& node) override
-    {
-        std::cout << "(" << node.mOp.lexema << " ";
-        node.mRight->accept(*this);
-        std::cout << ")";
-    }
+		std::any accept(ExprVisitor& v) override { return v.visitGroupingExpr(*this); }
+		Expr& getExpr() const { return *mExpr.get(); }
 
-    void visit(GroupingExpr& node) override
-    {
-        std::cout << "(group ";
-        node.mExpr->accept(*this);
-        std::cout << ")";
-    }
+	private:
+		const std::unique_ptr<Expr> mExpr;
 
-    void visit(Literal& node) override
-    {
-        std::cout << std::any_cast<std::string>(node.mValue);
-    }
-};
+	};
+
+
+	class Literal : public Expr
+	{
+	public:
+
+		Literal(std::any v) : mValue(v) {}
+		std::any accept(ExprVisitor& v) override { return v.visitLiteralExpr(*this); }
+		const std::any& getValue() const { return mValue; }
+
+
+	private:
+		const std::any mValue;
+
+	};
+
+}

@@ -8,7 +8,9 @@ namespace Sunflower
 	std::unique_ptr<Expr> Parser::parse()
 	{
 		try { return expression(); }
-		catch (ParseError error) { return nullptr; }
+		catch (ParseError error) { 
+			std::cout << error.what();
+			return nullptr; }
 	};
 
 	std::unique_ptr<Expr> Parser::expression() 
@@ -92,9 +94,14 @@ namespace Sunflower
 		if (match({ TokenType::FALSE })) return std::make_unique<Literal>("false");
 		if (match({ TokenType::_NULL })) return std::make_unique<Literal>("null");
 
-		if (match({ TokenType::NUMBER, TokenType::IDENTIFIER})) 
+		if (match({ TokenType::IDENTIFIER}))
 		{
 			return std::make_unique<Literal>(previous().lexema);
+		}
+
+		if(match({TokenType::NUMBER})) 
+		{
+			return std::make_unique<Literal>(std::stod(previous().lexema));
 		}
 
 		if(match({TokenType::LEFT_PARENTHESIS})) 
