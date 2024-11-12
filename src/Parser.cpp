@@ -3,19 +3,113 @@
 namespace Sunflower
 {
 
-	Parser::Parser(std::vector<Token>& Tokens) : mTokens{ Tokens }, mCurrentToken{ 0 } {}
+	Parser::Parser(std::vector<Token>& Tokens) : mTokens{ std::move(Tokens) }, mCurrentToken{ 0 }, mStatements{} {}
 
-	std::unique_ptr<Expr> Parser::parse()
+	std::vector<std::unique_ptr<Stmt>> Parser::parse()
 	{
-		try { return expression(); }
-		catch (ParseError error) { 
-			std::cout << error.what();
-			return nullptr; }
+		while(!isAtEnd()) 
+		{
+			mStatements.push_back(declaration());
+		}
+
+		return std::move(mStatements);
 	};
+
+	std::unique_ptr<Stmt> Parser::declaration()
+	{
+		try 
+		{
+			if (match({ TokenType::LET})) return varDeclaration();
+
+			return statement();
+		}
+		catch (ParseError error) 
+		{
+			synchronize();
+
+			return nullptr;
+		};
+		
+	}
+	std::unique_ptr<Stmt> Parser::block() 
+	{
+		std::vector<std::unique_ptr<Stmt>> statements;
+
+		while(!check(TokenType::RIGHT_CBRACE) && !isAtEnd()) 
+		{
+			statements.push_back(declaration());
+		}
+
+		consume(TokenType::RIGHT_CBRACE, "Expect '}' after block");
+
+		return std::make_unique<BlockStmt>(std::move(statements));
+	}
+	std::unique_ptr<Stmt> Parser::varDeclaration() 
+	{
+		auto name = consume(TokenType::IDENTIFIER, "Expect variable name");
+
+		std::unique_ptr<Expr> initializer;
+
+
+		if(match({TokenType::EQUAL})) 
+		{
+			initializer = expression();
+		}
+
+		consume(TokenType::SEMICOLON, "Expect ; after variable declaration");
+
+		return std::make_unique<VarStmt>(name, std::move(initializer));
+	}
+	std::unique_ptr<Stmt> Parser::statement() 
+	{
+		if (match({ TokenType::POUT })) return statement();
+
+		if (match({ TokenType::LEFT_CBRACE })) return block();
+
+		return expressionStmt();
+	}
+	
+	std::unique_ptr<Stmt> Parser::printStmt() 
+	{
+		auto value = expression();
+
+		consume(TokenType::NEWLINE, "Expected new line");
+
+		return std::make_unique<PrintStmt>(std::move(value));
+	}
+	std::unique_ptr<Stmt> Parser::expressionStmt() 
+	{
+		auto expr = expression();
+
+		consume(TokenType::SEMICOLON, "Expect ;");
+
+		return std::make_unique<ExprStmt>(std::move(expr));
+	}
+
+	std::unique_ptr<Expr> Parser::assignment()
+	{
+		auto expr = equality();
+
+		if (match({ TokenType::EQUAL }))
+		{
+			Token equals = previous();
+			auto value = assignment();
+
+
+			if (auto* varExpr = dynamic_cast<VarExpr*>(expr.get()); varExpr) //instanceof hack -> checks if expr is a VarExpr
+			{
+				return std::make_unique<AssignExpr>(varExpr->getName(), std::move(value));
+			}
+
+			error(equals, "Invalid assignment target");
+		}
+
+		return expr;
+	}
 
 	std::unique_ptr<Expr> Parser::expression() 
 	{
-		return equality();
+		return assignment();
 	};
 	std::unique_ptr<Expr> Parser::equality() 
 	{
@@ -96,7 +190,7 @@ namespace Sunflower
 
 		if (match({ TokenType::IDENTIFIER}))
 		{
-			return std::make_unique<Literal>(previous().lexema);
+			return std::make_unique<VarExpr>(previous());
 		}
 
 		if(match({TokenType::NUMBER})) 
@@ -170,7 +264,7 @@ namespace Sunflower
 		
 		Sunflower::error(t, message);
 
-
+		
 		throw ParseError{};
 	}
 

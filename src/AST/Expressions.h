@@ -12,7 +12,7 @@ namespace Sunflower
 	class GroupingExpr;
 	class Literal;
 	class VarExpr;
-
+	class AssignExpr;
 
 	class ExprVisitor
 	{
@@ -22,6 +22,7 @@ namespace Sunflower
 		virtual std::any visitGroupingExpr(GroupingExpr& node) = 0;
 		virtual std::any visitLiteralExpr(Literal& node) = 0;
 		virtual std::any visitVarExpr(VarExpr& node) = 0;
+		virtual std::any visitAssignExpr(AssignExpr& node) = 0;
 		virtual ~ExprVisitor() = default;
 	};
 
@@ -104,10 +105,24 @@ namespace Sunflower
 	class VarExpr: public Expr
 	{
 	public:
-		VarExpr(std::string& n) : mName{ n } {}
+		VarExpr(Token& n) : mName{ n } {}
 		std::any accept(ExprVisitor& v) override { return v.visitVarExpr(*this); }
-		std::string getName() const { return mName; }
+		const Token& getName() const { return mName; }
 	private:
-		const std::string mName;
+		const Token mName;
+	};
+
+	class AssignExpr : public Expr 
+	{
+	public:
+		AssignExpr(const Token& name, std::unique_ptr<Expr> value) : mName(name), mValue(std::move(value)) {}
+
+		std::any accept(ExprVisitor& v) override { return v.visitAssignExpr(*this); }
+		Expr& getValueExpr() const { return *mValue; }
+		const Token& getName() const { return mName; }
+
+	private:
+		const std::unique_ptr<Expr> mValue;
+		const Token mName;
 	};
 }

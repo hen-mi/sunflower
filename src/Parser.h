@@ -1,5 +1,7 @@
 #pragma once 
-#include <AST.h>
+#include <AST/Expressions.h>
+#include <AST/Statements.h>
+
 #include <stdexcept>
 #include <Sunflower.h>
 
@@ -10,7 +12,7 @@ namespace Sunflower
 	public:
 
 		Parser(std::vector<Token>& Tokens);
-		std::unique_ptr<Expr> parse();
+		std::vector<std::unique_ptr<Stmt>> parse();
 
 	private:
 		
@@ -19,6 +21,13 @@ namespace Sunflower
 		Token previous();
 		Token consume(TokenType t, const std::string& message);
 
+		std::unique_ptr<Stmt> block();
+		std::unique_ptr<Stmt> statement();
+		std::unique_ptr<Stmt> printStmt();
+		std::unique_ptr<Stmt> expressionStmt();
+		std::unique_ptr<Stmt> declaration();
+		std::unique_ptr<Stmt> varDeclaration();
+		std::unique_ptr<Expr> assignment();
 		std::unique_ptr<Expr> expression();
 		std::unique_ptr<Expr> equality();
 		std::unique_ptr<Expr> comparison();
@@ -42,7 +51,7 @@ namespace Sunflower
 		void synchronize();
 
 	private:
-
+		std::vector<std::unique_ptr<Stmt>> mStatements;
 		const std::vector<Token> mTokens;
 		size_t mCurrentToken;
 	};

@@ -3,16 +3,22 @@
 namespace Sunflower 
 {
 
-    Evaluator::Evaluator(Expr& expr)
+    Evaluator::Evaluator(std::vector<std::unique_ptr<Stmt>>&& program) : mEnvironment(std::make_unique<Environment>())
     {
         try 
         { 
-        std::any value = evaluate(expr); 
-        std::cout << stringify(value) << "\n"; 
+            for( const auto& stmt: program) 
+            {
+                execute(*stmt);
+            }
         } 
         catch (RuntimeError error) { Sunflower::report(error.getToken().line, error.getToken().lexema, error.what() ); }
     }
 
+    void Evaluator::execute(Stmt& stmt) 
+    {
+        stmt.accept(*this);
+    }
 
     std::string Evaluator::stringify(const std::any& object)
     {
@@ -108,7 +114,7 @@ namespace Sunflower
 		switch (node.getOp().tokentype) 
 		{
 		case TokenType::MINUS:
-			return -std::any_cast<double>(right);
+			return std::any_cast<double>(right) * -1;
 		case TokenType::NOT:
 			std::cout << "NOT IMPLEMENTED\n";
             return std::any{};
@@ -131,8 +137,10 @@ namespace Sunflower
 		
 	}
 
-	bool Evaluator::isTrue(Expr& node) 
+	bool Evaluator::isTrue(const std::any& object)
 	{
+        if (!object.has_value()) return false;
+        else if (object.type() == typeid(bool)) return std::any_cast<bool>(object);
 		return true;
 	}
 
@@ -146,5 +154,71 @@ namespace Sunflower
         {
             throw RuntimeError(op, "Operands must be numbers");
         }
+    }
+
+
+    std::any Evaluator::visitExprStmt(ExprStmt& stmt) 
+    {
+       auto value = evaluate(stmt.getExpr());
+        std::cout << stringify(value) << "\n";
+        return {};
+    }
+
+    std::any Evaluator::visitPrintStmt(PrintStmt& stmt) 
+    {
+
+        return std::any{};
+    }
+
+    std::any Evaluator::visitVarExpr(VarExpr& node) 
+    {
+        return mEnvironment->getValue(node.getName());
+    }
+    std::any Evaluator::visitVarStmt(VarStmt& stmt) 
+    {
+        std::any value;
+
+        if(stmt.hasInitializer()) 
+        {
+            value = evaluate(stmt.getInitializer());
+        }
+
+        mEnvironment->define(stmt.getName().lexema, value);
+
+        return {};
+    }
+
+
+    std::any Evaluator::visitAssignExpr(AssignExpr& node) 
+    {
+        
+        auto value = evaluate(node.getValueExpr());
+        mEnvironment->assign(node.getName(), value);
+        return value;
+    }
+
+    std::any Evaluator::visitBlockStmt(BlockStmt& stmt) 
+    {
+        executeBlock(stmt.getStatements(), std::make_unique<Environment>(mEnvironment.get()));
+        return {};
+    }
+
+    void Evaluator::executeBlock(const std::vector<std::unique_ptr<Stmt>>& statements, std::unique_ptr<Environment>& environment) 
+    {
+
+        std::unique_ptr<Environment> previous = std::move(mEnvironment);
+        try {
+            mEnvironment = std::move(environment);
+            for (const auto& statementPtr : statements) {
+                
+                execute(*statementPtr);
+            }
+        }
+        catch (RuntimeError error) {
+            environment = std::move(previous);
+            throw error;
+        }
+
+        mEnvironment = std::move(previous);
     }
 }

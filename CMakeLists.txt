@@ -14,6 +14,7 @@ set(SOURCE_FILES
                 src/Sunflower.cpp
                 src/Evaluator.cpp
                 src/CodeGen.cpp
+                src/Environment.cpp
 )
 
 include_directories(${LLVM_INCLUDE_DIRS})

@@ -7,16 +7,17 @@
 
 int main(int argc, char** argv)
 {
-    const std::string filePath = "examples/ff2.txt"; // 4
+    const std::string filePath = "examples/assign3.txt"; 
+    auto t = Sunflower::readFromFile(filePath);
+    std::cout << t << '\n';
+    Sunflower::Lexer l(t);
 
-    std::cout << Sunflower::readFromFile(filePath) << '\n';
+    auto temp = l.tokenize();
+
+    Sunflower::printTokensTable(temp)
+        ;
+    Sunflower::Parser parser{ temp };
+    
+    Sunflower::Evaluator e(parser.parse());
    
-    {Sunflower::Lexer l(Sunflower::readFromFile(filePath)); }
-    Sunflower::Parser parser{ Sunflower::SymbolsTable };
-    auto expr = parser.parse();
-    Sunflower::Evaluator e(*expr);
-
-
-    Sunflower::printSymbolsTable();
-   
-}
+}                       
