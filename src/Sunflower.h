@@ -9,11 +9,9 @@
 namespace Sunflower
 {
 	void error(Token token, const std::string& message);
-	void report(int line, const std::string& where, const std::string& message);
+	void report(size_t line, const std::string& where, const std::string& message);
 
 	std::string readFromFile(const std::string& filePath);
-	void printSymbolsTable();
-
-	inline std::vector<Token> SymbolsTable;
+	void printTokensTable(const std::vector<Token>& tokenTable);
 
 }

@@ -1,7 +1,7 @@
 #include <sunflower.h>
 namespace Sunflower 
 {
-    void Sunflower::report(int line, const std::string& where, const std::string& message)  
+    void Sunflower::report(size_t line, const std::string& where, const std::string& message)  
     {
         std::cerr << "[line: " << line << " ]" << "Error: " << where << " " << message << "\n";
     }
@@ -27,9 +27,9 @@ namespace Sunflower
         return buffer.str();
     }
 
-    void Sunflower::printSymbolsTable()
+    void Sunflower::printTokensTable(const std::vector<Token>& tokenTable)
     {
-        for (const auto& token : Sunflower::SymbolsTable) 
+        for (const auto& token : tokenTable) 
         {
             
             std::cout << TokenTypeToString[token.tokentype] <<" " << token.lexema << " " << token.line << "\n";

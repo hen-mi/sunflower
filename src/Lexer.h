@@ -8,7 +8,7 @@ namespace Sunflower
 	public:
 
 		Lexer(const std::string& source);
-		void tokenize();
+		std::vector<Token> tokenize();
 		~Lexer();
 
 	private:
@@ -22,9 +22,9 @@ namespace Sunflower
 		void string();
 		void identifier();
 		void number();
-
+		
 	private:
-
+		std::vector<Token> mTokenTable;
 		const std::string mSourceCode;
 		size_t				mPosition;
 		size_t					mLine;

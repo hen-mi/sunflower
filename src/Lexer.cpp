@@ -6,11 +6,10 @@ namespace Sunflower
 		: mSourceCode{ source }, mPosition{ 0 }, mByte{ source[mPosition] }, 
 		  mLine{ 1 }, mCurrentLexema{""} 
 	{
-		
-		Lexer::tokenize();
+				
 	}
 
-	void Lexer::tokenize()
+	std::vector<Token> Lexer::tokenize()
 	{
 
 		while(!isAtEnd()) 
@@ -68,6 +67,8 @@ namespace Sunflower
 			case '<': addToken(findMatch('=') ? TokenType::GREATER_EQUAL : TokenType::GREATER); break;
 
 			case '!': addToken(findMatch('=') ? TokenType::NOT_EQUAL : TokenType::NOT); break;
+
+			case ';': mCurrentLexema += c; addToken(TokenType::SEMICOLON); break;
 			//Literals
 			case '"': string();  break;
 
@@ -77,7 +78,7 @@ namespace Sunflower
 			case '\r':	break;
 			case '\t':	break;
 			
-			case '\n': mCurrentLexema += c; addToken(TokenType::NEWLINE); mLine++; break;
+			case '\n': mLine++; break;
 
 			default:
 			//identifier or keyword
@@ -98,6 +99,8 @@ namespace Sunflower
 		}
 
 		Lexer::addToken(TokenType::_EOF);
+
+		return mTokenTable;
 	}
 
 	bool Lexer::isAtEnd() 
@@ -111,13 +114,13 @@ namespace Sunflower
 
 	char Lexer::peekChar() 
 	{
-		return Lexer::isAtEnd() ? '\n' : mSourceCode[mPosition + 1];
+		return Lexer::isAtEnd() ? '\n' : mSourceCode[mPosition];
 	}
 
 	char Lexer::nextPeekChar() 
 	{
 		if (mPosition + 1 >= mSourceCode.size()) return '\0';
-		return Lexer::isAtEnd() ? '\n' : mSourceCode[mPosition + 2];
+		return Lexer::isAtEnd() ? '\n' : mSourceCode[mPosition + 1];
 	}
 
 	bool Lexer::findMatch(char expected) 
@@ -133,8 +136,7 @@ namespace Sunflower
 
 	void Lexer::addToken(TokenType type) 
 	{
-		//TODO: add numbers as their values, not strings
-		Sunflower::SymbolsTable.push_back
+		Lexer::mTokenTable.push_back
 		(
 			{ type, mCurrentLexema, mLine}
 		);
@@ -167,7 +169,6 @@ namespace Sunflower
 			
 			mCurrentLexema += Lexer::nextChar();
 		}
-		mCurrentLexema += Lexer::nextChar();
 
 		if(keyword.find(mCurrentLexema) != keyword.end()) 
 		{
@@ -192,8 +193,6 @@ namespace Sunflower
 		}
 		
 		while (std::isdigit(Lexer::peekChar())) mCurrentLexema += Lexer::nextChar();
-
-		if(mCurrentLexema.size() > 1) mCurrentLexema += Lexer::nextChar();
 
 		addToken(TokenType::NUMBER);
 
