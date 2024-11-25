@@ -8,6 +8,7 @@ namespace Sunflower
 {
 		
 	class BinaryExpr;
+	class LogicalExpr;
 	class UnaryExpr;
 	class GroupingExpr;
 	class Literal;
@@ -23,6 +24,7 @@ namespace Sunflower
 		virtual std::any visitLiteralExpr(Literal& node) = 0;
 		virtual std::any visitVarExpr(VarExpr& node) = 0;
 		virtual std::any visitAssignExpr(AssignExpr& node) = 0;
+		virtual std::any visitLogicalExpr(LogicalExpr& node) = 0;
 		virtual ~ExprVisitor() = default;
 	};
 
@@ -46,6 +48,25 @@ namespace Sunflower
 			mLeft(std::move(left)), mRight(std::move(right)), mOp(op) {}
 
 		std::any accept(ExprVisitor& v) override { return v.visitBinaryExpr(*this); }
+
+		Expr& getLeftExpr() const { return *mLeft; }
+		Expr& getRightExpr() const { return *mRight; }
+		const Token& getOp() const { return mOp; }
+
+	private:
+		const std::unique_ptr<Expr> mLeft;
+		const std::unique_ptr<Expr> mRight;
+		const Token mOp;
+	};
+
+	class LogicalExpr : public Expr
+	{
+	public:
+
+		LogicalExpr(std::unique_ptr<Expr> left, Token op, std::unique_ptr<Expr> right) :
+			mLeft(std::move(left)), mRight(std::move(right)), mOp(op) {}
+
+		std::any accept(ExprVisitor& v) override { return v.visitLogicalExpr(*this); }
 
 		Expr& getLeftExpr() const { return *mLeft; }
 		Expr& getRightExpr() const { return *mRight; }

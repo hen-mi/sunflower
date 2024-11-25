@@ -25,9 +25,14 @@ namespace Sunflower
 		std::unique_ptr<Stmt> statement();
 		std::unique_ptr<Stmt> printStmt();
 		std::unique_ptr<Stmt> expressionStmt();
+		std::unique_ptr<Stmt> whileStmt();
+		std::unique_ptr<Stmt> forStmt();
+		std::unique_ptr<Stmt> ifStmt();
 		std::unique_ptr<Stmt> declaration();
 		std::unique_ptr<Stmt> varDeclaration();
 		std::unique_ptr<Expr> assignment();
+		std::unique_ptr<Expr> or();
+		std::unique_ptr<Expr> and();
 		std::unique_ptr<Expr> expression();
 		std::unique_ptr<Expr> equality();
 		std::unique_ptr<Expr> comparison();
@@ -37,8 +42,9 @@ namespace Sunflower
 		std::unique_ptr<Expr> primary();
 
 		bool match(std::vector<TokenType> TokenTypes);
-		
+		bool find(std::vector<TokenType> TokenTypes);
 		bool check(TokenType type); 
+		
 		bool isAtEnd();
 
 		class ParseError : public std::runtime_error {

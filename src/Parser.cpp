@@ -61,14 +61,116 @@ namespace Sunflower
 		return std::make_unique<VarStmt>(name, std::move(initializer));
 	}
 	std::unique_ptr<Stmt> Parser::statement() 
-	{
+	{/*
+
+		if (check(TokenType::LEFT_PARENTHESIS)) 
+		{
+			size_t temp = mCurrentToken;
+
+			if (find({ TokenType::RIGHT_PARENTHESIS, TokenType::IF, TokenType::LEFT_CBRACE })) 
+			{
+				return ifStmt();
+			}
+
+			mCurrentToken = temp;
+		}
+*/
+		if (match({ TokenType::WHILE })) return whileStmt();
+		if (match({ TokenType::FOR })) return forStmt();
+		if (match({ TokenType::IF })) return ifStmt();
 		if (match({ TokenType::POUT })) return statement();
 
 		if (match({ TokenType::LEFT_CBRACE })) return block();
 
 		return expressionStmt();
 	}
-	
+	std::unique_ptr<Stmt> Parser::whileStmt() 
+	{
+		consume(TokenType::LEFT_PARENTHESIS, "Expect '(' before if condition");
+
+		auto condition = expression();
+
+		consume(TokenType::RIGHT_PARENTHESIS, "Expect ')' after if condition");
+		
+		auto body = statement();
+
+		return std::make_unique<WhileStmt>(std::move(condition), std::move(body));
+	}
+
+	std::unique_ptr<Stmt> Parser::forStmt() 
+	{
+		consume(TokenType::LEFT_PARENTHESIS, "Expect '(' before if condition");
+
+		std::unique_ptr<Stmt> initializer;
+
+		if (match({ TokenType::SEMICOLON })) initializer = nullptr;
+
+		else if (match({ TokenType::LET }))  initializer = varDeclaration();
+
+		else initializer = expressionStmt();
+
+		std::unique_ptr<Expr> condition;
+
+		if (!check(TokenType::SEMICOLON)) condition = expression();
+
+		consume(TokenType::SEMICOLON, "Expect ';' after loop condition");
+
+		std::unique_ptr<Expr> increment;
+
+		if(!check(TokenType::RIGHT_PARENTHESIS)) 
+		{
+			increment = expression();
+		}
+
+		consume(TokenType::RIGHT_PARENTHESIS, "Expect ')' after for clauses");
+
+		auto body = statement();
+
+		if (increment) 
+		{
+			std::vector<std::unique_ptr<Stmt>> statements;
+			statements.push_back(std::move(body));
+			statements.push_back(std::make_unique<ExprStmt>(std::move(increment)));
+			body = std::make_unique<BlockStmt>(std::move(statements));
+		}
+
+		if (!condition) 
+		{
+			condition = std::make_unique<Literal>(true);
+		}
+		body = std::make_unique<WhileStmt>(std::move(condition), std::move(body));
+
+		if (initializer) 
+		{
+			std::vector<std::unique_ptr<Stmt>> statements;
+			statements.push_back(std::move(initializer));
+			statements.push_back(std::move(body));
+			body = std::make_unique<BlockStmt>(std::move(statements));
+		}
+
+		return body;
+
+	}
+	std::unique_ptr<Stmt> Parser::ifStmt() 
+	{
+		// "(" expression ")" "->" statement ("else" statement)? ;
+		consume(TokenType::LEFT_PARENTHESIS, "Expect '(' before if condition");
+
+		auto condition = expression();
+
+		consume(TokenType::RIGHT_PARENTHESIS, "Expect ')' after if condition");
+
+		auto thenBranch = statement();
+
+		std::unique_ptr<Stmt> elseBranch;
+		if (match({ TokenType::ELSE}))
+		{
+			elseBranch = statement();
+		}
+
+		return std::make_unique<IfStmt>(std::move(condition), std::move(thenBranch), std::move(elseBranch));
+	}
+
 	std::unique_ptr<Stmt> Parser::printStmt() 
 	{
 		auto value = expression();
@@ -88,7 +190,7 @@ namespace Sunflower
 
 	std::unique_ptr<Expr> Parser::assignment()
 	{
-		auto expr = equality();
+		auto expr = or();
 
 		if (match({ TokenType::EQUAL }))
 		{
@@ -106,7 +208,36 @@ namespace Sunflower
 
 		return expr;
 	}
+	std::unique_ptr<Expr> Parser::or() 
+	{
+		auto expr = Parser::and();
 
+		while(match({TokenType::OR})) 
+		{
+			auto op = previous();
+
+			auto right = Parser::and();
+
+			expr = std::make_unique<LogicalExpr>(std::move(expr), std::move(op), std::move(right));
+		}
+
+		return expr;
+	}
+	std::unique_ptr<Expr> Parser::and() 
+	{
+		auto expr = equality();
+
+		while(match({TokenType::AND})) 
+		{
+			auto op = previous();
+
+			auto right = equality();
+
+			expr = std::make_unique<LogicalExpr>(std::move(expr), std::move(op), std::move(right));
+		}
+
+		return expr;
+	}
 	std::unique_ptr<Expr> Parser::expression() 
 	{
 		return assignment();
@@ -132,7 +263,7 @@ namespace Sunflower
 
 		while(match({TokenType::GREATER, TokenType::GREATER_EQUAL, TokenType::LESS, TokenType::LESS_EQUAL})) 
 		{
-			Token op = previous();
+			auto op = previous();
 			auto right = term();
 
 			expr = std::make_unique<BinaryExpr>(std::move(expr), op, std::move(right));
@@ -221,6 +352,25 @@ namespace Sunflower
 
 		return false;
 	};
+
+	bool Parser::find(std::vector<TokenType> sequence) 
+	{
+		size_t temp = mCurrentToken;
+
+		for (auto type : sequence) 
+		{
+
+			if (!check(type)) {
+				mCurrentToken = temp; // Reset position on failure
+				return false;
+			}
+			advance();
+		}
+
+		mCurrentToken = temp; // Reset position after checking
+		return true;
+	}
+
 
 	Token Parser::peek() 
 	{

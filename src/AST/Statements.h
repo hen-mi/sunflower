@@ -7,6 +7,8 @@ namespace Sunflower
 	class PrintStmt;
 	class VarStmt;
 	class BlockStmt;
+	class WhileStmt;
+	class IfStmt;
 
 	class StmtVisitor
 	{
@@ -16,6 +18,8 @@ namespace Sunflower
 		virtual std::any visitPrintStmt(PrintStmt& stmt) = 0;
 		virtual std::any visitVarStmt(VarStmt& stmt) = 0;
 		virtual std::any visitBlockStmt(BlockStmt& stmt) = 0;
+		virtual std::any visitIfStmt(IfStmt& stmt) = 0;
+		virtual std::any visitWhileStmt(WhileStmt& stmt) = 0;
 		virtual ~StmtVisitor() = default;
 	};
 
@@ -74,4 +78,41 @@ namespace Sunflower
 
 		std::vector<std::unique_ptr<Stmt>> mStatements;
 	};
+
+	class IfStmt : public Stmt 
+	{
+
+	public:
+		IfStmt(std::unique_ptr<Expr> condition, std::unique_ptr<Stmt> thenBranch, std::unique_ptr<Stmt> elseBranch) 
+			: mCondition(std::move(condition)), mThenBranch(std::move(thenBranch)), mElseBranch(std::move(elseBranch)) {};
+		std::any accept(StmtVisitor& v) override { return v.visitIfStmt(*this); }
+
+		Expr& getCondition() const { return *mCondition; }
+		Stmt& getThenBranch() const { return *mThenBranch; }
+		Stmt& getElseBranch() const { return *mElseBranch; }
+		bool hasElseBranch() const { return mElseBranch != nullptr; }
+
+	private:
+		std::unique_ptr<Expr> mCondition;
+		std::unique_ptr<Stmt> mThenBranch;
+		std::unique_ptr<Stmt> mElseBranch;
+	};
+
+
+	class WhileStmt : public Stmt
+	{
+	public:
+		WhileStmt(std::unique_ptr<Expr> condition, std::unique_ptr<Stmt> body) 
+					: mCondition(std::move(condition)), mBody(std::move(body)) {}
+
+		std::any accept(StmtVisitor& v) override { return v.visitWhileStmt(*this); }
+		Expr& getCondition() const { return *mCondition; }
+		Stmt& getBody() const { return *mBody; }
+	private:
+
+		std::unique_ptr<Expr> mCondition;
+		std::unique_ptr<Stmt> mBody;
+	};
+
+
 }

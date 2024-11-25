@@ -29,7 +29,7 @@ namespace Sunflower
 
         if (object.type() == typeid(bool)) 
         {
-            return std::any_cast<bool>(object) ? "false" : "true";
+            return std::any_cast<bool>(object) ? "true" : "false";
         }
 
         if (object.type() == typeid(double)) 
@@ -52,7 +52,34 @@ namespace Sunflower
 
         return "";
     }
+    bool Evaluator::isEqual(const std::any& left, const std::any& right) const 
+    {
+        // nil is only equal to nil
+        if (!left.has_value() && !right.has_value()) {
+            return true;
+        }
+        if (!left.has_value()) {
+            return false;
+        }
 
+        if (left.type() != right.type()) {
+            return false;
+        }
+
+        if (left.type() == typeid(bool)) {
+            return std::any_cast<bool>(left) == std::any_cast<bool>(right);
+        }
+
+        if (left.type() == typeid(double)) {
+            return std::any_cast<double>(left) == std::any_cast<double>(right);
+        }
+
+        if (left.type() == typeid(std::string)) {
+            return std::any_cast<std::string>(left) == std::any_cast<std::string>(right);
+        }
+
+        return false;
+    }
     std::any Evaluator::visitBinaryExpr(BinaryExpr& expr)
     {
         const auto left = evaluate(expr.getLeftExpr());
@@ -61,9 +88,9 @@ namespace Sunflower
         switch (expr.getOp().tokentype) {
             // equality operators
         case TokenType::NOT_EQUAL:
-            return std::any{}; //!isEqual(left, right);
-        case TokenType::EQUAL:
-            return std::any{}; //isEqual(left, right);
+            return !isEqual(left, right);
+        case TokenType::EQUAL_EQUAL:
+            return isEqual(left, right);
             // comparison operators
         case TokenType::GREATER:
             checkNumberOperands(expr.getOp(), left, right);
@@ -139,9 +166,19 @@ namespace Sunflower
 
 	bool Evaluator::isTrue(const std::any& object)
 	{
-        if (!object.has_value()) return false;
-        else if (object.type() == typeid(bool)) return std::any_cast<bool>(object);
-		return true;
+        if (!object.has_value()) 
+        {
+            
+            return false;
+        }
+
+        if (object.type() == typeid(bool)) 
+        {
+            
+            return std::any_cast<bool>(object);
+        }
+
+        return true;
 	}
 
     void Evaluator::checkNumberOperands(const Token& op, const std::any& left, const std::any& right) 
@@ -156,7 +193,18 @@ namespace Sunflower
         }
     }
 
+    std::any Evaluator::visitLogicalExpr(LogicalExpr& node) 
+    {
+        auto left = evaluate(node.getLeftExpr());
 
+        if (node.getOp().tokentype == TokenType::OR && isTrue(left))
+        {
+            return left;
+        }
+        else if (!isTrue(left)) return left;
+
+        return evaluate(node.getRightExpr());
+    }
     std::any Evaluator::visitExprStmt(ExprStmt& stmt) 
     {
        auto value = evaluate(stmt.getExpr());
@@ -170,6 +218,31 @@ namespace Sunflower
         return std::any{};
     }
 
+    std::any Evaluator::visitWhileStmt(WhileStmt& stmt) 
+    {
+        while (isTrue(evaluate(stmt.getCondition())))
+        {
+            execute(stmt.getBody());
+        }
+
+        return { };
+    }
+    std::any Evaluator::visitIfStmt(IfStmt& stmt) 
+    {
+      
+    
+        if (isTrue(evaluate(stmt.getCondition()))) 
+        {
+            
+            execute(stmt.getThenBranch());
+        } 
+        else if(stmt.hasElseBranch()) 
+        {
+            execute(stmt.getElseBranch());
+        }
+
+        return {};
+    }
     std::any Evaluator::visitVarExpr(VarExpr& node) 
     {
         return mEnvironment->getValue(node.getName());

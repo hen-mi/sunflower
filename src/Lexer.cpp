@@ -62,9 +62,9 @@ namespace Sunflower
 						
 			case '=': addToken(findMatch('=') ? TokenType::EQUAL_EQUAL : TokenType::EQUAL); break;
 
-			case '>': addToken(findMatch('=') ? TokenType::LESS_EQUAL  : TokenType::LESS);  break;
+			case '<': addToken(findMatch('=') ? TokenType::LESS_EQUAL  : TokenType::LESS);  break;
 
-			case '<': addToken(findMatch('=') ? TokenType::GREATER_EQUAL : TokenType::GREATER); break;
+			case '>': addToken(findMatch('=') ? TokenType::GREATER_EQUAL : TokenType::GREATER); break;
 
 			case '!': addToken(findMatch('=') ? TokenType::NOT_EQUAL : TokenType::NOT); break;
 
