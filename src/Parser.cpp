@@ -20,7 +20,7 @@ namespace Sunflower
 		try 
 		{
 			if (match({ TokenType::LET})) return varDeclaration();
-
+			if (match({ TokenType::FN })) return function();
 			return statement();
 		}
 		catch (ParseError error) 
@@ -31,7 +31,39 @@ namespace Sunflower
 		};
 		
 	}
-	std::unique_ptr<Stmt> Parser::block() 
+
+	std::unique_ptr<Stmt> Parser::function() 
+	{
+		auto name = consume(TokenType::IDENTIFIER, "Expect function name");
+
+		consume(TokenType::LEFT_PARENTHESIS, "Expect '(' after function name");
+
+		std::vector<Token> parameters;
+
+		if(!check(TokenType::RIGHT_PARENTHESIS)) 
+		{
+			do
+			{
+				if (parameters.size() >= 255)
+				{
+					error(peek(), "Can't have more than 255 arguments.");
+				}
+				parameters.push_back(consume(TokenType::IDENTIFIER, "Expect parameter name"));
+
+			} while (match({ TokenType::COMMA }));
+		}
+
+		consume(TokenType::RIGHT_PARENTHESIS, "Expect ')' after parameters");
+
+		consume(TokenType::LEFT_CBRACE, "Expect '{' before function body");
+
+		auto body = block();
+
+		return std::make_unique<FunctionStmt>(name, std::move(parameters), std::move(body));
+
+	}
+
+	std::vector<std::unique_ptr<Stmt>> Parser::block()
 	{
 		std::vector<std::unique_ptr<Stmt>> statements;
 
@@ -42,7 +74,7 @@ namespace Sunflower
 
 		consume(TokenType::RIGHT_CBRACE, "Expect '}' after block");
 
-		return std::make_unique<BlockStmt>(std::move(statements));
+		return statements;
 	}
 	std::unique_ptr<Stmt> Parser::varDeclaration() 
 	{
@@ -74,16 +106,34 @@ namespace Sunflower
 
 			mCurrentToken = temp;
 		}
-*/
+*/	
+		if (match({ TokenType::RETURN })) return returnStmt();
 		if (match({ TokenType::WHILE })) return whileStmt();
 		if (match({ TokenType::FOR })) return forStmt();
 		if (match({ TokenType::IF })) return ifStmt();
 		if (match({ TokenType::POUT })) return statement();
 
-		if (match({ TokenType::LEFT_CBRACE })) return block();
+		if (match({ TokenType::LEFT_CBRACE })) return std::make_unique<BlockStmt>(block());
 
 		return expressionStmt();
 	}
+
+	std::unique_ptr<Stmt> Parser::returnStmt() 
+	{
+		auto keyword = previous();
+
+		std::unique_ptr<Expr> value = nullptr;
+
+		if(!check(TokenType::SEMICOLON)) 
+		{
+			value = expression();
+		}
+
+		consume(TokenType::SEMICOLON, "Expect ';' after return statement value");
+
+		return std::make_unique<ReturnStmt>(std::move(keyword), std::move(value));
+	}
+
 	std::unique_ptr<Stmt> Parser::whileStmt() 
 	{
 		consume(TokenType::LEFT_PARENTHESIS, "Expect '(' before if condition");
@@ -311,8 +361,42 @@ namespace Sunflower
 			return std::make_unique<UnaryExpr>(op, std::move(right));
 		}
 
-		return primary();
+		return call();
 	}
+	std::unique_ptr<Expr> Parser::call() 
+	{
+		auto expr = primary();
+
+		while(match({TokenType::LEFT_PARENTHESIS}))
+		{
+			expr = finishCall(expr);
+		}
+
+		return expr;
+	}
+
+	std::unique_ptr<Expr> Parser::finishCall(std::unique_ptr<Expr>& callee) 
+	{
+		std::vector<std::unique_ptr<Expr>> arguments;
+
+		if (!check({TokenType::RIGHT_PARENTHESIS})) 
+		{
+			do 
+			{
+				if(arguments.size() >= 255) 
+				{
+					error(peek(), "Can't have more than 255 arguments.");
+				}
+				arguments.push_back(expression());
+
+			} while (match({ TokenType::COMMA }));
+		}
+
+		auto paren = consume(TokenType::RIGHT_PARENTHESIS, "Expect ')' after arguments");
+
+		return std::make_unique<CallExpr>(std::move(callee), std::move(paren), std::move(arguments));
+	}
+
 	std::unique_ptr<Expr> Parser::primary() 
 	{
 		if (match({ TokenType::TRUE })) return std::make_unique<Literal>("true");

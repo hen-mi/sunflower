@@ -8,6 +8,8 @@ namespace Sunflower
 	class VarStmt;
 	class BlockStmt;
 	class WhileStmt;
+	class FunctionStmt;
+	class ReturnStmt;
 	class IfStmt;
 
 	class StmtVisitor
@@ -20,6 +22,8 @@ namespace Sunflower
 		virtual std::any visitBlockStmt(BlockStmt& stmt) = 0;
 		virtual std::any visitIfStmt(IfStmt& stmt) = 0;
 		virtual std::any visitWhileStmt(WhileStmt& stmt) = 0;
+		virtual std::any visitFunctionStmt(FunctionStmt& stmt) = 0;
+		virtual std::any visitReturnStmt(ReturnStmt& stmt) = 0;
 		virtual ~StmtVisitor() = default;
 	};
 
@@ -114,5 +118,35 @@ namespace Sunflower
 		std::unique_ptr<Stmt> mBody;
 	};
 
+	class FunctionStmt : public Stmt 
+	{
+	public:
+		FunctionStmt(Token& name, std::vector<Token> params, std::vector<std::unique_ptr<Stmt>> body)
+			: mName(std::move(name)), mParams(std::move(params)), mBody(std::move(body)) {};
+		std::any accept(StmtVisitor& v) override { return v.visitFunctionStmt(*this); };
 
+		const Token& getName() const { return mName; };
+		std::vector<Token>& getParams() { return mParams; }
+		std::vector<std::unique_ptr<Stmt>>& getBody() { return mBody; }
+
+	private:
+		const Token mName;
+		std::vector<Token> mParams;
+		std::vector<std::unique_ptr<Stmt>> mBody;
+	};
+
+	class ReturnStmt : public Stmt 
+	{
+
+	public:
+		ReturnStmt(const Token& keyword, std::unique_ptr<Expr> value): mKeyword(keyword), mValue(std::move(value)) {};
+		std::any accept(StmtVisitor& v) override { return v.visitReturnStmt(*this); };
+
+		const Token& getKeyword() const { return mKeyword; }
+		bool hasValue() const { return mValue.get() != nullptr; }
+		Expr& getValue() const { return *mValue; }
+	private:
+		const Token mKeyword;
+		std::unique_ptr<Expr> mValue;
+	};
 }

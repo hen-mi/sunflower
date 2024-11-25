@@ -21,14 +21,16 @@ namespace Sunflower
 		Token previous();
 		Token consume(TokenType t, const std::string& message);
 
-		std::unique_ptr<Stmt> block();
+		std::vector<std::unique_ptr<Stmt>> block();
 		std::unique_ptr<Stmt> statement();
 		std::unique_ptr<Stmt> printStmt();
 		std::unique_ptr<Stmt> expressionStmt();
+		std::unique_ptr<Stmt> returnStmt();
 		std::unique_ptr<Stmt> whileStmt();
 		std::unique_ptr<Stmt> forStmt();
 		std::unique_ptr<Stmt> ifStmt();
 		std::unique_ptr<Stmt> declaration();
+		std::unique_ptr<Stmt> function();
 		std::unique_ptr<Stmt> varDeclaration();
 		std::unique_ptr<Expr> assignment();
 		std::unique_ptr<Expr> or();
@@ -39,6 +41,8 @@ namespace Sunflower
 		std::unique_ptr<Expr> term();
 		std::unique_ptr<Expr> factor();
 		std::unique_ptr<Expr> unary();
+		std::unique_ptr<Expr> call();
+		std::unique_ptr<Expr> finishCall(std::unique_ptr<Expr>& callee);
 		std::unique_ptr<Expr> primary();
 
 		bool match(std::vector<TokenType> TokenTypes);

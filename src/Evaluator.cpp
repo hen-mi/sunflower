@@ -3,8 +3,9 @@
 namespace Sunflower 
 {
 
-    Evaluator::Evaluator(std::vector<std::unique_ptr<Stmt>>&& program) : mEnvironment(std::make_unique<Environment>())
+    Evaluator::Evaluator(std::vector<std::unique_ptr<Stmt>>&& program) : mGlobals(std::make_shared<Environment>()), mGlobalEnvironment(mGlobals), mEnvironment(mGlobals)
     {
+        
         try 
         { 
             for( const auto& stmt: program) 
@@ -18,6 +19,11 @@ namespace Sunflower
     void Evaluator::execute(Stmt& stmt) 
     {
         stmt.accept(*this);
+    }
+
+    std::shared_ptr<Environment> Evaluator::getGlobalEnvironment()
+    {
+        return mGlobalEnvironment;
     }
 
     std::string Evaluator::stringify(const std::any& object)
@@ -270,28 +276,74 @@ namespace Sunflower
         return value;
     }
 
-    std::any Evaluator::visitBlockStmt(BlockStmt& stmt) 
+    std::any Evaluator::visitCallExpr(CallExpr& node) 
     {
-        executeBlock(stmt.getStatements(), std::make_unique<Environment>(mEnvironment.get()));
+        auto callee = evaluate(node.getCallee());
+
+        std::vector<std::any> arguments;
+
+        for (const auto& argument : node.getArguments())
+        {
+            arguments.push_back(evaluate(*argument));
+        }
+
+        if (callee.type() != typeid(Callable)) 
+        {
+            throw RuntimeError(node.getParen(), "Can only call functions and classes.");
+        }
+
+        auto function = std::any_cast<Callable>(callee);
+        if (arguments.size() != function.getArity()) 
+        {
+            throw RuntimeError(node.getParen(), 
+                                "Invalid number of arguments, expected: " + std::to_string(function.getArity()) + ", but got " + std::to_string(arguments.size()));
+        }
+
+        return function.call(*this, arguments);
+    }
+    std::any Evaluator::visitFunctionStmt(FunctionStmt& stmt) 
+    {
+        mEnvironment->define(stmt.getName().lexema, Callable(&stmt));
         return {};
     }
 
-    void Evaluator::executeBlock(const std::vector<std::unique_ptr<Stmt>>& statements, std::unique_ptr<Environment>& environment) 
+    std::any Evaluator::visitReturnStmt(ReturnStmt& stmt) 
     {
+        std::any value;
+        if (stmt.hasValue()) 
+        {
+            value = evaluate(stmt.getValue());
+        }
 
-        std::unique_ptr<Environment> previous = std::move(mEnvironment);
+        throw ReturnException(value);
+    }
+
+    std::any Evaluator::visitBlockStmt(BlockStmt& stmt) 
+    {
+        executeBlock(stmt.getStatements(), std::make_shared<Environment>(mEnvironment));
+        return {};
+    }
+
+    void Evaluator::executeBlock(const std::vector<std::unique_ptr<Stmt>>& statements, std::shared_ptr<Environment>& environment) 
+    {
+        std::shared_ptr<Environment> previous = std::move(mEnvironment);
         try {
             mEnvironment = std::move(environment);
-            for (const auto& statementPtr : statements) {
-                
+            for (const auto& statementPtr : statements)
+            {
+
                 execute(*statementPtr);
             }
         }
-        catch (RuntimeError error) {
+        catch (RuntimeError error) 
+        {
             environment = std::move(previous);
             throw error;
         }
 
         mEnvironment = std::move(previous);
+        
+               
     }
+
 }

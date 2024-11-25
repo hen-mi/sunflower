@@ -15,6 +15,7 @@ set(SOURCE_FILES
                 src/Evaluator.cpp
                 src/CodeGen.cpp
                 src/Environment.cpp
+                src/Callable.cpp
 )
 
 include_directories(${LLVM_INCLUDE_DIRS})

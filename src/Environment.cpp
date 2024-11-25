@@ -5,7 +5,7 @@ namespace Sunflower
 	Environment::Environment() : mEnclosing(nullptr) //global scope
 	{}
 
-	Environment::Environment(Environment* enclosing) : mEnclosing(enclosing) //local scope
+	Environment::Environment(std::shared_ptr<Environment> enclosing) : mEnclosing(std::move(enclosing)) //local scope
 	{}
 
 	std::any Environment::getValue(const Token& name)
@@ -14,7 +14,7 @@ namespace Sunflower
 		{
 			return mNamedValues[name.lexema];
 		}
-		if (mEnclosing != nullptr) return mEnclosing->getValue(name);
+		if (mEnclosing) return mEnclosing->getValue(name);
 
 		throw RuntimeError(name, "Undefined variable " + name.lexema + "\n");
 	}
@@ -30,7 +30,7 @@ namespace Sunflower
 			mNamedValues[name.lexema] = value;
 			return;
 		}
-		if (mEnclosing != nullptr) mEnclosing->assign(name, value); return;
+		if (mEnclosing) { mEnclosing->assign(name, value); return; }
 
 		throw RuntimeError(name, "Undefined variable " + name.lexema + "\n");
 	}

@@ -4,14 +4,14 @@
 #include <string>
 #include <Token.h>
 #include <RuntimeError.h>
-
+#include <memory>
 namespace Sunflower 
 {
 	class Environment
 	{
 	public:
 		Environment();
-		Environment(Environment* enclosing);
+		explicit Environment(std::shared_ptr<Environment> enclosing);
 		~Environment() = default;
 
 		std::any getValue(const Token& name);
@@ -19,7 +19,7 @@ namespace Sunflower
 		void assign(const Token& name, const std::any& value);
 		
 	private:
-		Environment* mEnclosing;
+		std::shared_ptr<Environment> mEnclosing;
 		std::unordered_map<std::string, std::any> mNamedValues;
 		
 	};

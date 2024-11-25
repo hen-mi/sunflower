@@ -14,6 +14,7 @@ namespace Sunflower
 	class Literal;
 	class VarExpr;
 	class AssignExpr;
+	class CallExpr;
 
 	class ExprVisitor
 	{
@@ -25,6 +26,7 @@ namespace Sunflower
 		virtual std::any visitVarExpr(VarExpr& node) = 0;
 		virtual std::any visitAssignExpr(AssignExpr& node) = 0;
 		virtual std::any visitLogicalExpr(LogicalExpr& node) = 0;
+		virtual std::any visitCallExpr(CallExpr& node) = 0;
 		virtual ~ExprVisitor() = default;
 	};
 
@@ -145,5 +147,21 @@ namespace Sunflower
 	private:
 		const std::unique_ptr<Expr> mValue;
 		const Token mName;
+	};
+
+	class CallExpr : public Expr
+	{
+	public:
+		CallExpr(std::unique_ptr<Expr> callee, const Token& paren, std::vector<std::unique_ptr<Expr>> arguments)
+					: mArguments(std::move(arguments)), mParen(paren), mCallee(std::move(callee)) {}
+
+		std::any accept(ExprVisitor& v) override { return v.visitCallExpr(*this); }
+		const std::vector<std::unique_ptr<Expr>>& getArguments() { return mArguments; }
+		const Token& getParen() const { return mParen; }
+		Expr& getCallee() const { return *mCallee; }
+	private:
+		const Token mParen;
+		std::unique_ptr<Expr> mCallee;
+		std::vector<std::unique_ptr<Expr>> mArguments;
 	};
 }
