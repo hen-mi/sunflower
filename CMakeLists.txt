@@ -13,7 +13,7 @@ set(SOURCE_FILES
                 src/Parser.cpp
                 src/Sunflower.cpp
                 src/Evaluator.cpp
-                src/CodeGen.cpp
+                #src/CodeGen.cpp
                 src/Environment.cpp
                 src/Callable.cpp
                 #src/Resolver.cpp
