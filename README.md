@@ -1,7 +1,7 @@
-# Sunflower programming Language
+# Sunflower 
 ![logo](sunflower-logo.png)
 ## Overview
-Sunflower is a simple, expressive programming language designed to be easy to learn and fun to use. Sunflower is a dynamic-typed language based in Lua and C; the language is built around a simple syntax and supports a wide range of features such as variable assignment, loops, conditional statements, and function declarations.
+Sunflower is a simple, expressive scripting programming language designed to be easy to learn and fun to use. Sunflower is a dynamic-typed language based in Lua and C; the language supports a wide range of features such as variable assignment, loops, conditional statements, and function declarations.
 
 This README provides an overview of the Sunflower language's grammar, syntax, and usage. It also includes code examples to demonstrate how Sunflower can be used for various tasks.
 
