@@ -2,6 +2,7 @@
 #include <sunflower.h>
 #include <Lexer.h>
 #include <Parser.h>
+//#include <Resolver.h>
 #include <Evaluator.h>
 
 
@@ -11,12 +12,11 @@ int main(int argc, char** argv)
     auto t = Sunflower::readFromFile(filePath);
     std::cout << t << '\n';
     Sunflower::Lexer l(t);
+    Sunflower::Evaluator evaluator{};
 
     auto temp = l.tokenize();
-
-    //Sunflower::printTokensTable(temp);
     Sunflower::Parser parser{ temp };
+    //Sunflower::printTokensTable(temp);
     
-    Sunflower::Evaluator e(parser.parse());
-   
+    evaluator.run(parser.parse());
 }                       

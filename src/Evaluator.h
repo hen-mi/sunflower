@@ -7,6 +7,8 @@
 #include <Callable.h>
 #include <RuntimeError.h>
 #include <ReturnException.h>
+//#include <Resolver.h>
+
 namespace Sunflower
 {
 
@@ -14,10 +16,12 @@ namespace Sunflower
 	{
 	public:
 
-		Evaluator(std::vector<std::unique_ptr<Stmt>>&& program);
+		Evaluator();
 		~Evaluator() = default;
 
+		//void resolve(Expr& expr, int depth);
 		std::any evaluate(Expr& expr);
+		void run(std::vector<std::unique_ptr<Stmt>>&& program);
 		void executeBlock(const std::vector<std::unique_ptr<Stmt>>& statements, std::shared_ptr<Sunflower::Environment>& enviroment);
 		std::shared_ptr<Environment> getGlobalEnvironment();
 	private:
@@ -43,9 +47,10 @@ namespace Sunflower
 		bool isEqual(const std::any& left, const std::any& right) const;
 		std::string stringify(const std::any& object);
 		void checkNumberOperands(const Token& op, const std::any& left, const std::any& right);
+		//std::any lookUpVariable(const Token& name, Expr& expr);
 
 	private:
-
+		//std::unordered_map<Expr, int> mLocals;
 		std::shared_ptr<Environment> mGlobals;
 		std::shared_ptr<Environment> mGlobalEnvironment;
 		std::shared_ptr<Environment> mEnvironment;

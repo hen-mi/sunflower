@@ -7,7 +7,7 @@
 #include <memory>
 namespace Sunflower 
 {
-	class Environment
+	class Environment :std::enable_shared_from_this<Environment>
 	{
 	public:
 		Environment();
@@ -17,6 +17,9 @@ namespace Sunflower
 		std::any getValue(const Token& name);
 		void define(const std::string& name, const std::any& value);
 		void assign(const Token& name, const std::any& value);
+		//void assignAt(int distance, const Token& name, const std::any& value);
+		//std::any getAt(int distance, std::string name);
+		//std::shared_ptr<Environment> ancestor(int distance);
 		
 	private:
 		std::shared_ptr<Environment> mEnclosing;

@@ -415,7 +415,10 @@ namespace Sunflower
 		{
 			return std::make_unique<Literal>(std::stod(previous().lexema));
 		}
-
+		if(match({TokenType::STRING})) 
+		{
+			return std::make_unique<Literal>(previous().lexema);
+		}
 		if(match({TokenType::LEFT_PARENTHESIS})) 
 		{
 			auto expr = expression();

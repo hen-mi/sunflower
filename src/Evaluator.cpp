@@ -3,24 +3,43 @@
 namespace Sunflower 
 {
 
-    Evaluator::Evaluator(std::vector<std::unique_ptr<Stmt>>&& program) : mGlobals(std::make_shared<Environment>()), mGlobalEnvironment(mGlobals), mEnvironment(mGlobals)
+    Evaluator::Evaluator() : mGlobals(std::make_shared<Environment>()), mGlobalEnvironment(mGlobals), mEnvironment(mGlobals)
+    { }
+    void Evaluator::run(std::vector<std::unique_ptr<Stmt>>&& program) 
     {
-        
-        try 
-        { 
-            for( const auto& stmt: program) 
+        try
+        {
+            for (const auto& stmt : program)
             {
                 execute(*stmt);
             }
-        } 
-        catch (RuntimeError error) { Sunflower::report(error.getToken().line, error.getToken().lexema, error.what() ); }
+        }
+        catch (RuntimeError error) { Sunflower::report(error.getToken().line, error.getToken().lexema, error.what()); }
     }
-
     void Evaluator::execute(Stmt& stmt) 
     {
         stmt.accept(*this);
     }
+    /*
+    void Evaluator::resolve(Expr& expr, int depth) 
+    {
+        mLocals[expr] = depth;
 
+    }
+
+    std::any Evaluator::lookUpVariable(const Token& name, Expr& expr) 
+    {
+        auto elem = mLocals.find(expr);
+        if (elem != mLocals.end()) 
+        {
+            int distance = elem->second;
+            return mEnvironment->getAt(distance, name.lexema);
+        }
+        else {
+            return mGlobals->getValue(name);
+        }
+    }
+    */
     std::shared_ptr<Environment> Evaluator::getGlobalEnvironment()
     {
         return mGlobalEnvironment;
@@ -280,6 +299,14 @@ namespace Sunflower
     {
         
         auto value = evaluate(node.getValueExpr());
+        /*
+        if(mLocals.find(node) != mLocals.end()) 
+        {
+            int distance = mLocals[node];
+
+            mEnvironment->assignAt(distance, node.getName(), value);
+        }
+        */
         mEnvironment->assign(node.getName(), value);
         return value;
     }
@@ -307,7 +334,7 @@ namespace Sunflower
                                 "Invalid number of arguments, expected: " + std::to_string(function->getArity()) + ", but got " + std::to_string(arguments.size()));
         }
 
-        return function->call(*this, arguments);
+        return function->call(*this, std::move(arguments));
     }
     std::any Evaluator::visitFunctionStmt(FunctionStmt& stmt) 
     {
