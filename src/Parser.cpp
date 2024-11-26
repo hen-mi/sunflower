@@ -111,7 +111,7 @@ namespace Sunflower
 		if (match({ TokenType::WHILE })) return whileStmt();
 		if (match({ TokenType::FOR })) return forStmt();
 		if (match({ TokenType::IF })) return ifStmt();
-		if (match({ TokenType::POUT })) return statement();
+		if (match({ TokenType::POUT })) return printStmt();
 
 		if (match({ TokenType::LEFT_CBRACE })) return std::make_unique<BlockStmt>(block());
 
@@ -223,9 +223,12 @@ namespace Sunflower
 
 	std::unique_ptr<Stmt> Parser::printStmt() 
 	{
-		auto value = expression();
+		consume(TokenType::LEFT_PARENTHESIS, "Expect '(' after pout statement");
 
-		consume(TokenType::NEWLINE, "Expected new line");
+		auto value = expression();
+		consume(TokenType::RIGHT_PARENTHESIS, "Expect ')' after pout expression");
+
+		consume(TokenType::SEMICOLON, "Expect ';' after pout statement");
 
 		return std::make_unique<PrintStmt>(std::move(value));
 	}

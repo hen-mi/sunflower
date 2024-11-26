@@ -213,14 +213,14 @@ namespace Sunflower
     }
     std::any Evaluator::visitExprStmt(ExprStmt& stmt) 
     {
-       auto value = evaluate(stmt.getExpr());
-        std::cout << stringify(value) << "\n";
+        auto value = evaluate(stmt.getExpr());
         return {};
     }
 
     std::any Evaluator::visitPrintStmt(PrintStmt& stmt) 
     {
-
+        std::any value = evaluate(stmt.getExpr());
+        std::cout << stringify(value) << "\n";
         return std::any{};
     }
 
