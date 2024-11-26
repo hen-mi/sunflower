@@ -1,0 +1,11 @@
+fn fac(n) 
+{
+
+ ->(n == 2) return n;
+
+	return n * fac(n-1);
+}
+
+let a = 4;
+
+pout(fac(a));

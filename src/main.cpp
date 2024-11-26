@@ -7,7 +7,7 @@
 
 int main(int argc, char** argv)
 {
-    const std::string filePath = "examples/fff.txt"; 
+    const std::string filePath = "examples/double.txt"; 
     auto t = Sunflower::readFromFile(filePath);
     std::cout << t << '\n';
     Sunflower::Lexer l(t);
