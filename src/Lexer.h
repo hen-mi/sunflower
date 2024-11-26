@@ -9,7 +9,7 @@ namespace Sunflower
 
 		Lexer(const std::string& source);
 		std::vector<Token> tokenize();
-		~Lexer();
+		~Lexer() = default;
 
 	private:
 

@@ -1,6 +1,13 @@
 #pragma once 
 #include <any>
 #include <functional>
+#include <Evaluator.h>
+#include <Environment.h>
+#include <AST/Statements.h>
+#include <ReturnException.h>
+#include <cassert>
+#include <memory>
+
 
 namespace Sunflower 
 {
@@ -12,9 +19,8 @@ namespace Sunflower
         class Callable 
         {
         public:
-            Callable(int arity, FuncType f);
-            Callable(FunctionStmt* declaration); 
-
+            ~Callable() = default;
+            Callable(FunctionStmt* declaration, std::shared_ptr<Environment> closure);
             std::any call(Evaluator& evaluator, std::vector<std::any>& arguments) const;
 
             int getArity() const { return mArity; }
@@ -22,7 +28,7 @@ namespace Sunflower
         private:
             int mArity;
             FuncType mFn;
-
+            std::weak_ptr<Environment> mClosure;
             FunctionStmt* mDeclaration; 
         };
 	

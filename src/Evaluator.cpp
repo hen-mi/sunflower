@@ -115,17 +115,25 @@ namespace Sunflower
             checkNumberOperands(expr.getOp(), left, right);
             return std::any_cast<double>(left) - std::any_cast<double>(right);
         case TokenType::PLUS:
-            if (left.type() == typeid(double) && right.type() == typeid(double)) 
+            if (left.type() == typeid(double) && right.type() == typeid(double))
             {
 
                 return (std::any_cast<double>(left)) + (std::any_cast<double>(right));
             }
 
-            else if (left.type() == typeid(std::string) && right.type() == typeid(std::string)) 
+            else if (left.type() == typeid(std::string) && right.type() == typeid(std::string))
             {
                 return std::any_cast<std::string>(left) + std::any_cast<std::string>(right);
             }
 
+            else if (left.type() == typeid(std::string) && right.type() == typeid(double)) 
+            {
+                return std::any_cast<std::string>(left) + std::to_string(std::any_cast<double>(right));
+            }
+            else if (left.type() == typeid(double) && right.type() == typeid(std::string))
+            {
+                return std::to_string(std::any_cast<double>(left)) + std::any_cast<std::string>(right);
+            }
             throw RuntimeError(expr.getOp(), "Operands must be two numbers or two strings");
         case TokenType::SLASH:
             checkNumberOperands(expr.getOp(), left, right);
@@ -279,7 +287,7 @@ namespace Sunflower
     std::any Evaluator::visitCallExpr(CallExpr& node) 
     {
         auto callee = evaluate(node.getCallee());
-
+        
         std::vector<std::any> arguments;
 
         for (const auto& argument : node.getArguments())
@@ -287,23 +295,24 @@ namespace Sunflower
             arguments.push_back(evaluate(*argument));
         }
 
-        if (callee.type() != typeid(Callable)) 
+        if (callee.type() != typeid(std::shared_ptr<Callable>)) 
         {
             throw RuntimeError(node.getParen(), "Can only call functions and classes.");
         }
 
-        auto function = std::any_cast<Callable>(callee);
-        if (arguments.size() != function.getArity()) 
+        auto function = std::any_cast<std::shared_ptr<Callable>>(callee);
+        if (arguments.size() != function->getArity()) 
         {
             throw RuntimeError(node.getParen(), 
-                                "Invalid number of arguments, expected: " + std::to_string(function.getArity()) + ", but got " + std::to_string(arguments.size()));
+                                "Invalid number of arguments, expected: " + std::to_string(function->getArity()) + ", but got " + std::to_string(arguments.size()));
         }
 
-        return function.call(*this, arguments);
+        return function->call(*this, arguments);
     }
     std::any Evaluator::visitFunctionStmt(FunctionStmt& stmt) 
     {
-        mEnvironment->define(stmt.getName().lexema, Callable(&stmt));
+        auto callable = std::make_shared<Callable>(&stmt, mEnvironment);
+        mEnvironment->define(stmt.getName().lexema, callable);
         return {};
     }
 

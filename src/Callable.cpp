@@ -1,15 +1,10 @@
 #include <Callable.h>
-#include <Evaluator.h>
-#include <Environment.h>
-#include <AST/Statements.h>
-#include <ReturnException.h>
-#include <cassert>
+
 namespace Sunflower
 {
-    Callable::Callable(int arity, FuncType f) : mArity(arity), mFn(f), mDeclaration(nullptr)
-    {}
-
-    Callable::Callable(FunctionStmt* declaration) : mDeclaration(declaration)
+ 
+    Callable::Callable(FunctionStmt* declaration, std::shared_ptr<Environment> closure)
+        : mDeclaration(std::move(declaration)), mClosure(std::move(closure))
     {
 
         mArity = static_cast<int>(mDeclaration->getParams().size());
@@ -28,7 +23,11 @@ namespace Sunflower
         // extra-safe
 
 // define params as local variables for env
-        auto env = evaluator.getGlobalEnvironment();
+        
+         //auto env = evaluator.getGlobalEnvironment();
+
+        auto env = std::make_shared<Environment>(mClosure.lock());
+
         for (std::size_t i = 0; i < params.size(); ++i)
         {
             env->define(params.at(i).lexema, arguments.at(i));
@@ -36,7 +35,7 @@ namespace Sunflower
 
         try
         {
-            evaluator.executeBlock(mDeclaration->getBody(), std::move(env));
+            evaluator.executeBlock(mDeclaration->getBody(), env);
         }
         catch (const ReturnException& v)
         {

@@ -155,7 +155,7 @@ namespace Sunflower
 			mCurrentLexema += Lexer::nextChar();
 			
 		}
-		mCurrentLexema += Lexer::nextChar();
+		
 		Lexer::nextChar();
 		addToken(TokenType::STRING);
 	}
@@ -197,6 +197,5 @@ namespace Sunflower
 		addToken(TokenType::NUMBER);
 
 	}
-	Lexer::~Lexer() { std::cout << "Lexer object destroyed\n"; }
 }
 
