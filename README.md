@@ -56,7 +56,7 @@ The lexical grammar for Sunflower includes the following tokens:
 ### Declarations
 - **Function Declarations**: Functions are declared using the `fn` keyword followed by the function definition.
 
-# Sintax:
+# Syntax:
 ```sunflower
 fn functionName(parameters*) block ;
 ```
@@ -81,7 +81,7 @@ pout("Hello, Sunflower!");
 
 - **Variable Declarations**: Variables are declared with the `let` keyword. Optionally, a variable can be initialized with an expression.
 
-# Sintax:
+# Syntax:
 ```sunflower
 let variableName = expression;
 ```
